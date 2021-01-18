@@ -36,7 +36,7 @@ library(knitr)
 The text file exported from ArcMap will be imported into R for  processing. First, the unnecessary variables will be deleted and only the elevation intervals and corresponding areas will remain. Secondly, the data will be normalized (for elevation, we first substract the minimum elevation and then divide by the range. For area, we divide each entry by the total area of the sub-catchment). Thirdly, we plot the data on a 2D chart showing the curve drawn from the normalized data. Finally, we fit a 3rd degree polynomial equation to the data and integrate it within the limits of 0 and 1 to produce the hypsometric integral metric of the sub-catchment.
 
 ```{r loop}
-watersheds <- 1:60
+watersheds <- 1:93
 min_max <- read.csv("Minimum-Maximum.csv", header = TRUE)
 
 all_data <- list()
