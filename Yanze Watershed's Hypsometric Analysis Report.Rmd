@@ -1,7 +1,7 @@
 ---
 title: "Hypsometric Curves and Integrals of Yanze Sub-Catchments"
 author: "Faustin GASHAKAMBA"
-date: "1/13/2021"
+date: "1/25/2021"
 output:
   html_document: default
   pdf_document: default
@@ -11,9 +11,19 @@ output:
 knitr::opts_chunk$set(echo = TRUE, include=TRUE, warning=FALSE, message=FALSE)
 ```
 ***
-## I. Overview
+## I. Input Data Preparation
 
-In order to simplify the process of generating data required to draw an hypsometric curve of each sub-catchment in Yanze watershed, an ArcMap model was developed to perform the five steps involved in this process in one go. These steps are: 1) extract the DEM of the sub-catchment, 2) reclassify the DEM into classes of equidistant elevation height, 3) convert the reclassified DEM to vector using the ‘Value’ field, 4) dissolve the features using the ‘Value’ field, 5) calculate the area of each polygon, 6) export the table to a text file. 
+The first step of this process consists of delineating micro-catchments within Yanze watershed. This was done using ArcGIS’ hydrology tools and the main input data used was the DEM of Yanze watershed. The resulting map consists of 93 sub-catchments of different areas ranging from 20 to 300 Ha. Each sub-catchment was given a unique 4-character code which would serve as its ID throughout the remaining steps of the process.
+![*Sub-catchments map of Yanze*](Subwatershed_map.jpg)
+
+The second step is to generate required to draw an hypsometric curve for each of the 93 sub-catchments. To do this, an ArcMap model was developed to perform the six steps involved in this process in one go. These steps are:
+
+1. Extract the DEM of the sub-catchment, 
+2. Reclassify the DEM into classes of equidistant elevation height, 
+3. Convert the reclassified DEM to vector using the ‘Value’ field, 
+4. Dissolve the features using the ‘Value’ field, 
+5. Calculate the area of each polygon, and
+6. Export the table to a text file. 
 
 ![*ArcGIS Hypsometric Integral Model*](Hypsometric_Model_Graphic.png)
 
@@ -33,7 +43,11 @@ library(knitr)
 
 ## III. Results Per Sub-Catchment
 
-The text file exported from ArcMap will be imported into R for  processing. First, the unnecessary variables will be deleted and only the elevation intervals and corresponding areas will remain. Secondly, the data will be normalized (for elevation, we first substract the minimum elevation and then divide by the range. For area, we divide each entry by the total area of the sub-catchment). Thirdly, we plot the data on a 2D chart showing the curve drawn from the normalized data. Finally, we fit a 3rd degree polynomial equation to the data and integrate it within the limits of 0 and 1 to produce the hypsometric integral metric of the sub-catchment.
+The text file exported from ArcMap will be imported into R for  processing. First, the unnecessary variables will be deleted and only the elevation intervals and corresponding areas will remain. Secondly, the data will be normalized. For elevation, we first substract the minimum elevation and then divide by the range:
+$$normalizedElev=\frac{elev-minElev}{maxElev-minElev}$$
+For area, we divide the cumulative area at each entry by the total area of the sub-catchment:
+$$normalizedArea=\frac{cumulativeSumArea}{totalArea}$$ 
+Thirdly, we plot the data on a 2D chart showing the curve drawn from the normalized data. Finally, we fit a 3rd degree polynomial equation to the data and integrate it within the limits of 0 and 1 to produce the hypsometric integral metric of the sub-catchment.
 
 ```{r loop}
 watersheds <- 1:93
@@ -115,7 +129,7 @@ colnames(summary_table)<-c("CODE","MIN_ELEV", "MAX_ELEV", "AREA", "H_INTEGRAL")
  }
 # Produce a summary graph
 g <- ggplot(summary_table, aes(x = as.numeric(H_INTEGRAL)))
-g <- g + xlim(0.45,0.82)
+g <- g + xlim(0.45,0.9)
 g <- g + geom_density(alpha=.2, fill="#FF6666")
 g <- g + geom_histogram(binwidth = .01, color="darkblue", fill="lightblue")
 g <- g + scale_y_continuous(expand = c(0,0), limits = c(0,8)) 
@@ -129,6 +143,11 @@ png("PLOTS/Summary_plot.png")
 print(g)
 dev.off()
 ```
+
+The hypsometric analysis showed that all the sub-catchments of Yanze watershed are at young and equilibrium stage with hypsometric integrals
+ranging from 0.529 to 0.803.
+This means that all the sub-catchments of Yanze watershed  have  a potential to undergo intensive erosion if not enough soil conservation measures are undertaken. However, there is still a variability in this potential and this is what we will explore in the next component of this study.
+
 ```{r summary}
 # Print the summary table
 kable(summary_table)
